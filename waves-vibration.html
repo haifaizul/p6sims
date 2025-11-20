@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waves & Vibration - p6sims</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <a href="index.html" class="logo">p6sims</a>
+            <nav class="nav-links">
+                <a href="index.html#simulations">All Simulations</a>
+                <a href="index.html#about">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="page-header">
+        <div class="container">
+            <h1>Waves & Vibration</h1>
+            <div class="breadcrumb">
+                <a href="index.html">&larr; Back to All Topics</a>
+            </div>
+        </div>
+    </section>
+
+    <main class="container">
+        <div class="simulations-grid">
+
+            <div class="simulation-card">
+                <div class="card-thumbnail-area wave-sim-thumbnail">
+                    <span>〰️</span>
+                </div>
+                <div class="card-content">
+                    <h3>Basic Wave Properties</h3>
+                    <p>Visualize transverse and longitudinal waves. Adjust parameters and observe particle SHM vs. wave
+                        propagation.</p>
+                    <a href="waves_and_vibration/1_basic_wave/index.html" class="btn">Launch Simulation</a>
+                </div>
+            </div>
+
+            <div class="simulation-card">
+                <div class="card-thumbnail-area shm-sim-thumbnail">
+                    <span>⇄</span>
+                </div>
+                <div class="card-content">
+                    <h3>Simple Harmonic Motion</h3>
+                    <p>Explore SHM, its derivation from Uniform Circular Motion, and analyze displacement, velocity, and
+                        acceleration.</p>
+                    <a href="waves_and_vibration/2_shm_circular_motion/index.html" class="btn">Launch Simulation</a>
+                </div>
+            </div>
+
+            <div class="simulation-card">
+                <div class="card-thumbnail-area superposition-sim-thumbnail">
+                    <span>∿</span>
+                </div>
+                <div class="card-content">
+                    <h3>Wave Superposition</h3>
+                    <p>Combine two waves and observe constructive/destructive interference, beats, and the principle of
+                        superposition.</p>
+                    <a href="waves_and_vibration/3_superposition_interference/index.html" class="btn">Launch
+                        Simulation</a>
+                </div>
+            </div>
+
+            <div class="simulation-card">
+                <div class="card-thumbnail-area standing-wave-thumbnail">
+                    <span>⦙</span>
+                </div>
+                <div class="card-content">
+                    <h3>Standing Waves</h3>
+                    <p>Visualize how two counter-propagating waves interfere to form stationary patterns with nodes and
+                        antinodes.</p>
+                    <a href="waves_and_vibration/4_standing_waves/index.html" class="btn">Launch Simulation</a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; <span id="currentYear"></span> p6sims. Built by Hai.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+
+</body>
+
+</html>

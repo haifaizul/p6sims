@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waves & Vibration Simulations - p6sims</title>
+    <style>
+        :root {
+            --primary-color: #3498db; --secondary-color: #2ecc71;
+            --accent-color-wave: #e74c3c; --accent-color-shm: #f1c40f; 
+            --accent-color-superposition: #9b59b6; /* Existing color for superposition */
+            --accent-color-standing: #8e44ad;      /* New color for standing waves (another shade of purple) */
+            --accent-color-placeholder: #95a5a6;
+            --text-color: #333; --light-text-color: #555; --bg-color: #f4f7f6;
+            --card-bg-color: #ffffff; --border-color: #e0e6e5;
+            --hover-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --card-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            --link-color: var(--primary-color);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); line-height: 1.7; padding-bottom: 60px; /* Space for fixed insta popup */ }
+        .container { width: 90%; max-width: 960px; margin: 0 auto; padding: 20px 0; }
+        /* Header */
+        .site-header { background-color: var(--card-bg-color); padding: 15px 0; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .site-header .container { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .logo { font-size: 1.8em; font-weight: 700; color: var(--primary-color); text-decoration: none; }
+        .logo span { font-weight: 300; color: var(--secondary-color); }
+        .nav-links a { color: var(--light-text-color); text-decoration: none; margin-left: 20px; font-size: 0.95em; transition: color 0.3s ease; }
+        .nav-links a:hover { color: var(--primary-color); }
+        /* Topic Page Header */
+        .page-header { padding: 30px 20px; margin-bottom: 30px; background-color: #f0f5f9; border-bottom: 1px solid var(--border-color); text-align: center; }
+        .page-header h1 { font-size: 2.4em; color: var(--primary-color); margin-top: 0; margin-bottom: 10px; }
+        .page-header .breadcrumb a { color: var(--link-color); text-decoration: none; font-size: 0.9em; }
+        .page-header .breadcrumb a:hover { text-decoration: underline; }
+        /* Main Content */
+        .main-content { padding: 0 15px; }
+        .simulations-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-bottom: 40px; }
+        /* Card Styles */
+        .simulation-card { background-color: var(--card-bg-color); border-radius: 8px; box-shadow: var(--card-shadow); overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; }
+        .simulation-card:hover { transform: translateY(-5px); box-shadow: var(--hover-shadow); }
+        .card-thumbnail-area { width: 100%; height: 180px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.5em; font-weight: 500; text-align: center; padding: 10px; box-sizing: border-box; background: linear-gradient(45deg, #bdc3c7, #2c3e50); }
+        .wave-sim-thumbnail { background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color-wave) 100%); }
+        .wave-sim-thumbnail::before { content: "〰️"; font-size: 3em; opacity: 0.7; }
+        .shm-sim-thumbnail { background: linear-gradient(135deg, var(--secondary-color) 0%, var(--accent-color-shm) 100%); }
+        .shm-sim-thumbnail::before { content: "⇄"; font-size: 3em; opacity: 0.7; font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Color Emoji"; }
+        .superposition-sim-thumbnail { background: linear-gradient(135deg, var(--accent-color-superposition) 0%, var(--primary-color) 100%); }
+        .superposition-sim-thumbnail::before { content: "∿"; font-size: 3em; opacity: 0.7; font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Color Emoji"; }
+        /* **** NEW Thumbnail style for Standing Wave **** */
+        .standing-wave-thumbnail { background: linear-gradient(135deg, var(--accent-color-standing) 0%, var(--secondary-color) 100%); }
+        .standing-wave-thumbnail::before { content: "⦙"; /* You can use "|||" or other symbols for nodes/antinodes visual*/ font-size: 3em; opacity: 0.7; font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Color Emoji"; }
+
+        .placeholder-card .card-thumbnail-area { background: linear-gradient(45deg, #ecf0f1, var(--accent-color-placeholder)); }
+        .placeholder-card .card-thumbnail-area::before { content: "💡"; font-size: 3em; opacity: 0.7; }
+        .simulation-card .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .simulation-card h3 { margin-top: 0; margin-bottom: 10px; font-size: 1.4em; color: var(--text-color); }
+        .simulation-card p { font-size: 0.95em; color: var(--light-text-color); margin-bottom: 15px; flex-grow: 1; }
+        .simulation-card .btn { display: inline-block; background-color: var(--primary-color); color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; text-align: center; font-weight: 500; transition: background-color 0.3s ease; margin-top: auto; }
+        .simulation-card .btn:hover { background-color: #2980b9; }
+        .placeholder-card .card-content { text-align: center; }
+        .placeholder-card h3 { color: var(--light-text-color); }
+        /* Footer */
+        .site-footer { text-align: center; padding: 30px 20px; border-top: 1px solid var(--border-color); font-size: 0.9em; color: var(--light-text-color); }
+        .site-footer a#creatorLinkTopic, .site-footer a { color: #7f8c8d; font-weight: 500; text-decoration: none; transition: color 0.2s ease; }
+        .site-footer a#creatorLinkTopic:hover, .site-footer a:hover { color: var(--secondary-color); }
+        /* Instagram Pop-up Styles */
+        .insta-popup { position: fixed; bottom: 15px; right: 15px; background-color: var(--card-bg-color); color: var(--text-color); padding: 0; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 0.85em; z-index: 1000; border: 1px solid var(--border-color); }
+        .insta-popup a { display: flex; align-items: center; color: var(--primary-color); text-decoration: none; font-weight: 500; padding: 8px 12px; }
+        .insta-popup img, .insta-popup svg { width: 18px; height: 18px; margin-right: 8px; vertical-align: middle; }
+        .insta-popup a:hover { text-decoration: underline; background-color: #f0f0f0; border-radius: 20px; }
+        /* Responsive */
+        @media (max-width: 768px) { .page-header h1 { font-size: 2em; } .site-header .container { flex-direction: column; gap: 10px;} .nav-links { margin-top: 10px; } .nav-links a { margin-left: 0; margin-right: 15px;} .insta-popup{ font-size:0.8em;} .insta-popup a { padding: 6px 10px;} }
+        @media (max-width: 480px) { .page-header h1 { font-size: 1.7em; } .logo { font-size: 1.6em; } .card-thumbnail-area { height: 150px; font-size: 1.3em; } .wave-sim-thumbnail::before, .shm-sim-thumbnail::before, .superposition-sim-thumbnail::before, .standing-wave-thumbnail::before, .placeholder-card .card-thumbnail-area::before { font-size: 2.5em; } .simulation-card h3 { font-size: 1.2em; } .simulation-card p { font-size: 0.9em; } .simulation-card .btn { padding: 8px 15px; font-size: 0.9em;} .insta-popup{ bottom: 10px; right: 10px;}}
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <!-- UPDATED LINK according to your request -->
+            <a href="../p6sims" class="logo">p6<span>sims</span></a>
+            <nav class="nav-links">
+                <!-- UPDATED LINKS according to your request -->
+                <a href="../p6sims#simulations">All Simulations</a>
+                <a href="../p6sims#about">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="page-header">
+         <div class="container">
+            <h1>Waves & Vibration</h1>
+             <div class="breadcrumb">
+                 <!-- UPDATED LINK according to your request -->
+                 <a href="../p6sims">← Back to All Topics</a>
+             </div>
+        </div>
+    </section>
+
+    <main class="main-content container">
+        <div class="simulations-grid">
+
+            <div class="simulation-card">
+                <div class="card-thumbnail-area wave-sim-thumbnail"></div>
+                <div class="card-content">
+                    <h3>Basic Wave Properties</h3>
+                    <p>Visualize transverse and longitudinal waves. Adjust parameters and observe particle SHM vs. wave propagation.</p>
+                    <a href="waves_and_vibration/1_basic_wave/index.html" class="btn">Launch Simulation</a>
+                </div>
+            </div>
+
+            <div class="simulation-card">
+                <div class="card-thumbnail-area shm-sim-thumbnail"></div>
+                <div class="card-content">
+                    <h3>Simple Harmonic Motion (SHM)</h3>
+                    <p>Explore SHM, its derivation from Uniform Circular Motion, and analyze displacement, velocity, and acceleration.</p>
+                    <a href="waves_and_vibration/2_shm_circular_motion/index.html" class="btn">Launch Simulation</a>
+                </div>
+            </div>
+            
+            <div class="simulation-card">
+                <div class="card-thumbnail-area superposition-sim-thumbnail"></div>
+                <div class="card-content">
+                    <h3>Wave Superposition & Interference</h3>
+                    <p>Combine two waves and observe constructive/destructive interference, beats, and the principle of superposition.</p>
+                    <a href="waves_and_vibration/3_superposition_interference/index.html" class="btn">Launch Simulation</a>
+                </div>
+            </div>
+
+            <!-- **** NEW CARD FOR STANDING WAVES SIMULATION **** -->
+            <div class="simulation-card">
+                <div class="card-thumbnail-area standing-wave-thumbnail">
+                    <!-- Visual hint for standing waves -->
+                </div>
+                <div class="card-content">
+                    <h3>Standing Waves</h3>
+                    <p>Visualize how two counter-propagating waves interfere to form stationary patterns with nodes and antinodes.</p>
+                    <a href="waves_and_vibration/4_standing_waves/index.html" class="btn">Launch Simulation</a>
+                </div>
+            </div>
+            <!-- ********************************************* -->
+
+
+            <!-- Placeholder for future simulations in this topic -->
+             <div class="simulation-card placeholder-card">
+                 <div class="card-thumbnail-area"></div>
+                 <div class="card-content">
+                    <h3>More Physics Fun (Coming Soon!)</h3>
+                    <p>New simulations exploring different physics concepts are on the way.</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- NEW Instagram Pop-up Div for this page -->
+    <div class="insta-popup">
+        <a href="https://www.instagram.com/hai_faizul/" target="_blank" rel="noopener noreferrer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            <span>Created by Hai</span>
+        </a>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>© <span id="currentYear"></span> p6sims by <a id="creatorLinkTopic" href="https://www.instagram.com/hai_faizul/" target="_blank">Hai</a>. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Wave Simulation - p6sims</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../style.css">
+    <style>
+        /* Simulation Specific Styles */
+        :root {
+            --panel-bg-color: #f8fafc;
+            --slider-track-color: #e2e8f0;
+            --code-bg-color: #f1f5f9;
+        }
+
+        /* Override body layout from style.css for this specific page if needed, 
+           but we want to keep the global header/footer structure. */
+        body {
+            display: block;
+            /* Reset flex from original file */
+            padding: 0;
+            background-color: var(--bg-color);
+        }
+
+        .simulation-wrapper {
+            max-width: 900px;
+            margin: 40px auto;
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .controls-panel {
+            margin-bottom: 24px;
+            padding: 20px;
+            background-color: var(--panel-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+        }
+
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .control-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            flex: 1 1 250px;
+        }
+
+        .control-item label {
+            min-width: 100px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            margin: 0 12px;
+            cursor: pointer;
+            height: 6px;
+            background: var(--slider-track-color);
+            border-radius: 4px;
+            appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .value-display {
+            min-width: 40px;
+            text-align: right;
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .sim-button {
+            padding: 10px 24px;
+            background-color: var(--text-main);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sim-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        canvas {
+            border: 1px solid var(--border-color);
+            background-color: #ffffff;
+            display: block;
+            width: 100%;
+            height: 350px;
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+        }
+
+        .info-panel {
+            text-align: center;
+            padding: 12px;
+            background: #eff6ff;
+            border-radius: var(--radius-md);
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-bottom: 24px;
+            border: 1px solid #dbeafe;
+        }
+
+        /* Notes Section */
+        .notes-section {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--bg-color);
+        }
+
+        .notes-header {
+            padding: 16px 20px;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .notes-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .notes-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .notes-section.notes-open .notes-content {
+            display: block;
+        }
+
+        .note-block {
+            margin-bottom: 20px;
+        }
+
+        .note-block h4 {
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .note-block p,
+        .note-block li {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        code {
+            background: var(--code-bg-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--primary-color);
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <a href="../../index.html" class="logo">p6sims</a>
+            <nav class="nav-links">
+                <a href="../../index.html#simulations">All Simulations</a>
+                <a href="../../index.html#about">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="simulation-wrapper">
+            <div style="margin-bottom: 20px;">
+                <a href="../../waves-vibration.html" style="color: var(--text-muted); font-size: 0.9rem;">&larr; Back to
+                    Waves & Vibration</a>
+            </div>
+
+            <h1>Interactive Wave Simulation</h1>
+
+            <div class="controls-panel">
+                <div class="control-group">
+                    <div class="control-item">
+                        <label>Wave Type:</label>
+                        <div style="display: flex; gap: 15px;">
+                            <label style="min-width: auto; font-weight: normal;"><input type="radio" name="waveType"
+                                    value="transverse" checked> Transverse</label>
+                            <label style="min-width: auto; font-weight: normal;"><input type="radio" name="waveType"
+                                    value="longitudinal"> Longitudinal</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-item"> <label>Amplitude:</label> <input type="range" id="amplitude" min="5"
+                            max="50" value="30"> <span id="amplitudeValue" class="value-display">30</span> </div>
+                    <div class="control-item"> <label>Wavelength:</label> <input type="range" id="wavelength" min="50"
+                            max="400" value="200"> <span id="wavelengthValue" class="value-display">200</span> </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-item"> <label>Frequency:</label> <input type="range" id="frequency" min="0.1"
+                            max="2" step="0.1" value="0.5"> <span id="frequencyValue" class="value-display">0.5</span>
+                    </div>
+                    <div class="control-item"> <label>Particles:</label> <input type="range" id="numParticles" min="10"
+                            max="80" value="25"> <span id="numParticlesValue" class="value-display">25</span> </div>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <button id="pausePlayButton" class="sim-button">Pause</button>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                Wave Speed (v = fλ): <span id="waveSpeedValue">0 m·s⁻¹</span>
+            </div>
+
+            <canvas id="waveCanvas"></canvas>
+
+            <section id="notesSection" class="notes-section">
+                <div class="notes-header">
+                    <h3 data-lang-key="notesTitle">Key Concepts & Equations</h3>
+                    <button id="langToggleButton"
+                        style="background:none; border:1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer;">தமிழ்</button>
+                </div>
+                <div class="notes-content">
+                    <div class="note-block">
+                        <h4 data-lang-key="waveTypesTitle">Wave Types</h4>
+                        <p data-lang-key="transverseDef"><strong>Transverse:</strong> Particle oscillation (↕) is
+                            perpendicular to wave propagation direction (↔).</p>
+                        <p data-lang-key="longitudinalDef"><strong>Longitudinal:</strong> Particle oscillation (↔) is
+                            parallel to wave propagation direction (↔).</p>
+                    </div>
+                    <div class="note-block">
+                        <h4 data-lang-key="equationsTitle">Equations</h4>
+                        <ul>
+                            <li data-lang-key="eqSpeed">Wave Speed: <code>v = f * λ</code></li>
+                            <li data-lang-key="eqOmega">Angular Frequency: <code>ω = 2π * f</code></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; <span id="currentYear"></span> p6sims. Built by Hai.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+
+    <script>
+        // --- Core simulation logic ---
+        const canvas = document.getElementById('waveCanvas');
+        const ctx = canvas.getContext('2d');
+        const canvasHeight = 300;
+        const waveTypeRadios = document.querySelectorAll('input[name="waveType"]');
+        const amplitudeSlider = document.getElementById('amplitude');
+        const wavelengthSlider = document.getElementById('wavelength');
+        const frequencySlider = document.getElementById('frequency');
+        const numParticlesSlider = document.getElementById('numParticles');
+        const pausePlayButton = document.getElementById('pausePlayButton');
+        const amplitudeValueSpan = document.getElementById('amplitudeValue');
+        const wavelengthValueSpan = document.getElementById('wavelengthValue');
+        const frequencyValueSpan = document.getElementById('frequencyValue');
+        const numParticlesValueSpan = document.getElementById('numParticlesValue');
+        const waveSpeedValueSpan = document.getElementById('waveSpeedValue');
+
+        let currentWaveType = 'transverse';
+        let amplitude, wavelength, frequency, numParticles;
+        let angularFrequency, waveNumber, waveSpeed;
+        let time = 0;
+        let particles = [];
+        let isPaused = false;
+        let lastTimestamp = 0;
+        let animationFrameId = null;
+        let highlightedParticleIndex = -1; // Index of particle to highlight (-1 means none initially)
+
+        function updateParameters() {
+            currentWaveType = document.querySelector('input[name="waveType"]:checked').value;
+            amplitude = parseFloat(amplitudeSlider.value);
+            wavelength = parseFloat(wavelengthSlider.value);
+            frequency = parseFloat(frequencySlider.value);
+            numParticles = parseInt(numParticlesSlider.value);
+
+            amplitudeValueSpan.textContent = amplitude.toFixed(0);
+            wavelengthValueSpan.textContent = wavelength.toFixed(0);
+            frequencyValueSpan.textContent = frequency.toFixed(1);
+            numParticlesValueSpan.textContent = numParticles;
+
+            angularFrequency = 2 * Math.PI * frequency;
+            waveNumber = 2 * Math.PI / wavelength;
+            waveSpeed = frequency * wavelength;
+            waveSpeedValueSpan.innerHTML = `${waveSpeed.toFixed(1)} m·s<sup>-1</sup>`;
+
+            particles = [];
+            highlightedParticleIndex = -1; // Reset highlight
+            if (numParticles > 0 && ctx.canvas.width > 0) {
+                const effectiveCanvasWidth = ctx.canvas.width;
+                const particleSpacing = effectiveCanvasWidth / (numParticles + 1);
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push({ originalX: particleSpacing * (i + 1) });
+                }
+                // Calculate index of middle particle to highlight
+                if (numParticles > 0) {
+                    highlightedParticleIndex = Math.floor((numParticles - 1) / 2); // Use floor for even/odd count
+                }
+            }
+            if (!isPaused && animationFrameId === null) { lastTimestamp = performance.now(); animationFrameId = requestAnimationFrame(animate); } else if (!isPaused) { /* running */ } else { drawFrame(); }
+        }
+
+        function drawEquilibriumLine(y_center) {
+            ctx.beginPath(); ctx.moveTo(0, y_center); ctx.lineTo(ctx.canvas.width, y_center);
+            ctx.strokeStyle = 'rgba(150, 150, 150, 0.6)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+        }
+
+        function drawTransverseWaveShape() {
+            ctx.beginPath(); const y_center = ctx.canvas.height / 2; let startY = y_center + amplitude * Math.sin(waveNumber * 0 - angularFrequency * time); ctx.moveTo(0, startY);
+            for (let x = 1; x <= ctx.canvas.width; x++) { const y_offset = amplitude * Math.sin(waveNumber * x - angularFrequency * time); ctx.lineTo(x, y_center + y_offset); }
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim(); ctx.lineWidth = 2; ctx.stroke();
+        }
+
+        function drawTransverseParticles() {
+            const y_center = ctx.canvas.height / 2;
+            const particleRadius = 5;
+            const defaultColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
+            const highlightColor = getComputedStyle(document.documentElement).getPropertyValue('--highlight-color').trim();
+
+            particles.forEach((particle, index) => { // Get index here
+                const equilibriumX = particle.originalX;
+                // SHM Path (Vertical) - Same for all
+                ctx.beginPath(); ctx.moveTo(equilibriumX, y_center - amplitude); ctx.lineTo(equilibriumX, y_center + amplitude);
+                ctx.strokeStyle = 'rgba(150, 150, 150, 0.4)'; ctx.setLineDash([2, 3]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+
+                // Particle
+                const y_offset = amplitude * Math.sin(waveNumber * equilibriumX - angularFrequency * time);
+                const particleY = y_center + y_offset;
+
+                // Set fill style based on index
+                ctx.fillStyle = (index === highlightedParticleIndex) ? highlightColor : defaultColor;
+
+                ctx.beginPath(); ctx.arc(equilibriumX, particleY, particleRadius, 0, 2 * Math.PI);
+                ctx.fill(); // Use the fillStyle set above
+                // Optional: Add outline if needed
+                // if(index === highlightedParticleIndex){
+                //    ctx.strokeStyle = 'black';
+                //    ctx.lineWidth = 1;
+                //    ctx.stroke();
+                //}
+            });
+        }
+
+        function drawIntegratedLongitudinal(y_center) {
+            const graphVisualAmplitude = Math.min(amplitude, y_center - 10);
+            const defaultColor = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim();
+            const highlightColor = getComputedStyle(document.documentElement).getPropertyValue('--highlight-color').trim();
+
+            // 1. Draw Displacement Graph (Background)
+            ctx.beginPath(); const initial_displacement_graph = amplitude * Math.sin(waveNumber * 0 - angularFrequency * time); const initial_y_offset_graph = (initial_displacement_graph / (amplitude || 1)) * graphVisualAmplitude; ctx.moveTo(0, y_center + initial_y_offset_graph);
+            for (let x = 1; x <= ctx.canvas.width; x++) { const displacement_graph = amplitude * Math.sin(waveNumber * x - angularFrequency * time); const y_offset_graph = (displacement_graph / (amplitude || 1)) * graphVisualAmplitude; ctx.lineTo(x, y_center + y_offset_graph); }
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.3)'; ctx.lineWidth = 2; ctx.stroke();
+
+            // 2. Draw Particles and SHM Paths
+            const particleBarHeight = 25;
+            particles.forEach((particle, index) => { // Get index here
+                const equilibriumX = particle.originalX;
+                // SHM Path (Horizontal) - Same for all
+                ctx.beginPath(); ctx.moveTo(equilibriumX - amplitude, y_center); ctx.lineTo(equilibriumX + amplitude, y_center);
+                ctx.strokeStyle = 'rgba(150, 150, 150, 0.4)'; ctx.setLineDash([2, 3]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+
+                // Particle
+                const x_displacement = amplitude * Math.sin(waveNumber * equilibriumX - angularFrequency * time);
+                const currentX = equilibriumX + x_displacement;
+
+                // Set stroke style based on index
+                ctx.strokeStyle = (index === highlightedParticleIndex) ? highlightColor : defaultColor;
+
+                ctx.beginPath(); ctx.moveTo(currentX, y_center - particleBarHeight / 2); ctx.lineTo(currentX, y_center + particleBarHeight / 2);
+                ctx.lineWidth = (index === highlightedParticleIndex) ? 4 : 3; // Make highlight slightly thicker
+                ctx.lineCap = 'round';
+                ctx.stroke(); // Use the strokeStyle set above
+                ctx.lineCap = 'butt'; // Reset
+            });
+        }
+
+        function drawFrame() {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            const y_center = ctx.canvas.height / 2;
+            drawEquilibriumLine(y_center);
+            if (currentWaveType === 'transverse') { drawTransverseWaveShape(); drawTransverseParticles(); }
+            else if (currentWaveType === 'longitudinal') { drawIntegratedLongitudinal(y_center); }
+            else { console.error("Unknown wave type in drawFrame:", currentWaveType); }
+        }
+
+        function animate(timestamp) { /* ... animation logic remains the same ... */ if (!isPaused && !lastTimestamp) lastTimestamp = timestamp; if (isPaused && lastTimestamp) lastTimestamp = 0; let deltaTime = 0; if (!isPaused && lastTimestamp) { deltaTime = (timestamp - lastTimestamp) / 1000; } if (timestamp > lastTimestamp || isPaused) { lastTimestamp = timestamp; } if (!isPaused) { if (!isNaN(deltaTime) && deltaTime > 0 && deltaTime < 0.5) { time += deltaTime; } } drawFrame(); if (!isPaused) { animationFrameId = requestAnimationFrame(animate); } else { if (animationFrameId) cancelAnimationFrame(animationFrameId); animationFrameId = null; } }
+
+        // --- Language Switching Logic ---
+        const langToggleButton = document.getElementById('langToggleButton');
+        let currentNotesLanguage = 'en';
+        const languageData = { /* ... Language data ... */ notesTitle: { en: "Key Concepts & Equations", ta: "முக்கிய கருத்துகள் & சமன்பாடுகள்" }, waveTypesTitle: { en: "Wave Types", ta: "அலை வகைகள்" }, transverseDef: { en: "<strong>Transverse:</strong> Particle oscillation (↕) is perpendicular to wave propagation direction (↔). Example: Wave on a string.", ta: "<strong>குறுக்கு:</strong> துகள் அதிர்வு (↕) அலை பரவும் திசைக்கு (↔) செங்குத்தாக இருக்கும். எடுத்துக்காட்டு: கயிற்றில் அலை." }, longitudinalDef: { en: "<strong>Longitudinal:</strong> Particle oscillation (↔) is parallel to wave propagation direction (↔), creating areas of compression (high density) and rarefaction (low density). Example: Sound waves.", ta: "<strong>நீளவாட்டு:</strong> துகள் அதிர்வு (↔) அலை பரவும் திசைக்கு (↔) இணையாக இருக்கும், நெரிசல் (அதிக அடர்த்தி) மற்றும் நெகிழ்ச்சி (குறைந்த அடர்த்தி) பகுதிகளை உருவாக்குகிறது. எடுத்துக்காட்டு: ஒலி அலைகள்." }, motionTitle: { en: "Particle Motion vs. Wave Propagation", ta: "துகள் இயக்கம் vs. அலை பரவல்" }, motionDesc: { en: "Particles in the medium oscillate around a fixed equilibrium position (Simple Harmonic Motion - SHM), shown by the dashed lines. They do <strong>not</strong> travel with the wave. The wave itself is the propagating pattern of disturbance, transferring energy through the medium.", ta: "ஊடகத்தில் உள்ள துகள்கள் ஒரு நிலையான சமநிலை நிலையைச் சுற்றி (எளிய இசை இயக்கம் - SHM) அலைகின்றன (கோடிட்ட கோடுகள் காட்டுகின்றன). அவை அலையுடன் பயணம் <strong>செய்வதில்லை</strong>. அலையே பரவும் இடையூறு வடிவமாகும், இது ஊடகத்தின் வழியாக ஆற்றலைக் கடத்துகிறது." }, equationsTitle: { en: "Fundamental Equations (for wave in +x direction)", ta: "அடிப்படை சமன்பாடுகள் (+x திசையில் அலை)" }, eqDisp: { en: "Wave Displacement (Transverse y, Longitudinal ξ):<br><code>y(x,t)</code> or <code>ξ(x,t) = A sin(kx - ωt)</code>", ta: "அலை இடப்பெயர்ச்சி (குறுக்கு y, நீளவாட்டு ξ):<br><code>y(x,t)</code> or <code>ξ(x,t) = A sin(kx - ωt)</code>" }, eqSpeed: { en: "Wave Speed: <code>v = f * λ</code>", ta: "அலை வேகம்: <code>v = f * λ</code>" }, eqOmega: { en: "Angular Frequency: <code>ω = 2π * f</code> (rad/s)", ta: "கோண அதிர்வெண்: <code>ω = 2π * f</code> (rad/s)" }, eqK: { en: "Wave Number: <code>k = 2π / λ</code> (rad/m)", ta: "அலை எண்: <code>k = 2π / λ</code> (rad/m)" }, eqT: { en: "Period: <code>T = 1 / f</code> (s)", ta: "அலைவு காலம்: <code>T = 1 / f</code> (s)" }, eqVAlt: { en: "Alternate Speed Formula: <code>v = ω / k</code>", ta: "மாற்று வேக சூத்திரம்: <code>v = ω / k</code>" }, eqVars: { en: "<em>Where: A=Amplitude, f=Frequency, λ=Wavelength, t=Time, x=Position</em>", ta: "<em>இங்கு: A=வீச்சு, f=அதிர்வெண், λ=அலைநீளம், t=நேரம், x=நிலை</em>" }, tipsTitle: { en: "Simulation Tips", ta: " உருவகப்படுத்துதல் குறிப்புகள்" }, tipPause: { en: "Click 'Pause' to freeze the wave and examine the SHM paths (dashed lines) for individual particles.", ta: "'இடைநிறுத்து' என்பதைக் கிளிக் செய்து அலையை உறையவைத்து, தனிப்பட்ட துகள்களின் SHM பாதைகளை (கோடிட்ட கோடுகள்) ஆராயவும்." }, tipCompress: { en: "In Longitudinal mode, observe how compressions (dense bars) align with regions where the displacement (ξ) graph has the steepest negative slope.", ta: "நீளவாட்டு முறையில், இடப்பெயர்ச்சி (ξ) வரைபடம் செங்குத்தான எதிர்மறை சரிவைக் கொண்டிருக்கும் பகுதிகளுடன் நெரிசல்கள் (அடர்ந்த கம்பிகள்) எவ்வாறு ஒத்துப்போகின்றன என்பதைக் கவனியுங்கள்." }, tipSpeed: { en: "Adjust Frequency (f) and Wavelength (λ) to see their effect on Wave Speed (v).", ta: "அதிர்வெண் (f) மற்றும் அலைநீளம் (λ) ஆகியவற்றைச் சரிசெய்து அலை வேகத்தில் (v) அவற்றின் விளைவைக் காணவும்." } };
+        function updateNotesLanguage(lang) { document.querySelectorAll('[data-lang-key]').forEach(element => { const key = element.getAttribute('data-lang-key'); if (languageData[key] && languageData[key][lang]) { element.innerHTML = languageData[key][lang]; } }); langToggleButton.textContent = lang === 'en' ? 'தமிழ்' : 'English'; }
+        langToggleButton.addEventListener('click', (event) => { event.stopPropagation(); currentNotesLanguage = (currentNotesLanguage === 'en') ? 'ta' : 'en'; updateNotesLanguage(currentNotesLanguage); });
+
+        // --- Event Listeners ---
+        function resizeCanvas() { canvas.width = canvas.offsetWidth; canvas.height = canvasHeight; updateParameters(); }
+        window.addEventListener('resize', resizeCanvas);
+        waveTypeRadios.forEach(radio => radio.addEventListener('change', updateParameters));
+        amplitudeSlider.addEventListener('input', updateParameters);
+        wavelengthSlider.addEventListener('input', updateParameters);
+        frequencySlider.addEventListener('input', updateParameters);
+        numParticlesSlider.addEventListener('input', updateParameters);
+        pausePlayButton.addEventListener('click', () => { isPaused = !isPaused; pausePlayButton.textContent = isPaused ? 'Play' : 'Pause'; if (!isPaused) { lastTimestamp = performance.now(); if (!animationFrameId) animationFrameId = requestAnimationFrame(animate); } else { if (animationFrameId) cancelAnimationFrame(animationFrameId); animationFrameId = null; } });
+
+        // --- Initial Setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+            resizeCanvas();
+            updateNotesLanguage(currentNotesLanguage);
+            const notesSection = document.getElementById('notesSection');
+            const notesHeader = notesSection.querySelector('.notes-header');
+            const langButton = document.getElementById('langToggleButton');
+            if (notesHeader && notesSection) { notesHeader.addEventListener('click', (event) => { if (event.target !== langButton && !langButton.contains(event.target)) { notesSection.classList.toggle('notes-open'); } }); }
+            if (!isPaused) { lastTimestamp = performance.now(); animationFrameId = requestAnimationFrame(animate); } else { drawFrame(); }
+        });
+
+    </script>
+</body>
+
+</html>

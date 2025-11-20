@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standing Waves Simulation - Hai</title>
+    <style>
+        :root {
+            --primary-color: #3498db; --secondary-color: #2ecc71; --accent-color: #e74c3c;
+            --highlight-color: #f1c40f; --text-color: #333; --light-text-color: #555;
+            --bg-color: #f4f7f6; --container-bg: #ffffff; --border-color: #dde;
+            --panel-bg-color: #f9fbfc; --slider-thumb-color: var(--primary-color);
+            --slider-track-color: #cddcda; --button-bg-color: var(--primary-color);
+            --button-text-color: #ffffff; --link-color: var(--primary-color);
+            --code-bg-color: #e9ecef;
+            --incident-wave1-color: rgba(0, 123, 255, 0.5);
+            --incident-wave2-color: rgba(40, 167, 69, 0.5);
+            --standing-wave-color: var(--accent-color);
+            --particle-standing-color: var(--primary-color); /* For particles on standing wave */
+            --envelope-color: rgba(128, 128, 128, 0.5);
+            --node-color: var(--primary-color);
+            --antinode-color: var(--secondary-color);
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 10px; background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; }
+        .simulation-container { width: 100%; max-width: 850px; background-color: var(--container-bg); border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.08); padding: 20px; box-sizing: border-box; }
+        .nav-link-home { display: block; text-align: left; margin-bottom: 15px; font-size: 0.9em; }
+        .nav-link-home a { color: var(--link-color); text-decoration: none; font-weight: 500; }
+        .nav-link-home a:hover { text-decoration: underline; }
+        h1 { color: var(--primary-color); text-align: center; margin-top: 0; margin-bottom: 20px; font-weight: 600; font-size: 1.8em; }
+        .controls-panel { margin-bottom: 20px; padding: 15px; background-color: var(--panel-bg-color); border: 1px solid var(--border-color); border-radius: 8px; }
+        .control-group { display: flex; flex-wrap: wrap; gap: 15px 20px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        .control-group:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .control-item { display: flex; align-items: center; flex: 1 1 280px; min-width: 250px; gap: 8px;}
+        .control-item label { min-width: 100px; font-size: 0.9em; color: var(--light-text-color); white-space: nowrap; }
+        input[type="range"] { flex-grow: 1; margin: 0; cursor: pointer; -webkit-appearance: none; appearance: none; height: 8px; background: var(--slider-track-color); border-radius: 5px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: var(--slider-thumb-color); border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease-in-out, transform 0.1s ease; }
+        input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: var(--slider-thumb-color); border-radius: 50%; border: none; cursor: pointer; transition: background-color 0.2s ease-in-out, transform 0.1s ease; }
+        input[type="range"]:hover::-webkit-slider-thumb, input[type="range"]:active::-webkit-slider-thumb { background: #2980b9; transform: scale(1.1); }
+        input[type="range"]:hover::-moz-range-thumb, input[type="range"]:active::-moz-range-thumb { background: #2980b9; transform: scale(1.1); }
+        .control-item span.value-display { min-width: 45px; text-align: right; font-size: 0.85em; background-color: var(--code-bg-color); padding: 4px 7px; border-radius: 4px; font-weight: 500; }
+        .show-hide-toggles { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 15px; font-size: 0.9em;}
+        .show-hide-toggles label { cursor: pointer; color: var(--light-text-color); display:flex; align-items:center;}
+        .show-hide-toggles input[type="checkbox"] { margin-right: 5px; transform: scale(1.1);}
+        .global-controls { text-align: center; margin-top:10px;}
+        .info-panel { text-align: left; margin-bottom: 20px; font-size: 0.9em; background-color: #eef5ff; padding: 10px 15px; border-radius: 6px; border: 1px solid #cde0f5; color: #2c3e50; }
+        .info-panel div { margin-bottom: 5px; } .info-panel strong { color: var(--primary-color); font-weight: 600; }
+        .sim-button { padding: 8px 18px; font-size: 0.9em; font-weight: 500; background-color: var(--button-bg-color); color: var(--button-text-color); border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.2s ease, transform 0.1s ease; min-width: 90px; }
+        .sim-button:hover { background-color: #2980b9; transform: translateY(-1px); } .sim-button:active { transform: translateY(0px); }
+        canvas#standingWaveCanvas { border: 1px solid var(--border-color); background-color: #ffffff; display: block; width: 100%; height: 300px; border-radius: 8px; touch-action: none; margin-bottom: 20px; }
+        .notes-section { width: 100%; margin-top: 15px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--panel-bg-color); overflow: hidden; }
+        .notes-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; background-color: #fdfdfe; }
+        .notes-header h3 { margin: 0; font-weight: 600; color: var(--primary-color); font-size: 1em; flex-grow: 1; }
+        .notes-header::after { content: '▸'; font-size: 1.2em; transition: transform 0.2s ease-in-out; color: var(--light-text-color); margin-left: 10px; }
+        .notes-section.notes-open .notes-header::after { transform: rotate(90deg); }
+        .notes-section.notes-open .notes-header { border-bottom-color: transparent; }
+        .notes-content { padding: 15px; font-size: 0.9em; display: none; border-top: 1px solid var(--border-color); }
+        .notes-section.notes-open .notes-content { display: block; }
+        .note-block { margin-bottom: 15px; } .note-block:last-child { margin-bottom: 0; } .note-block h4 { margin-top: 0; margin-bottom: 5px; font-weight: 600; color: var(--text-color); } .note-block ul { margin-top: 5px; margin-bottom: 10px; padding-left: 25px; } .note-block li { margin-bottom: 5px; } .note-block code { background-color: var(--code-bg-color); padding: 2px 5px; border-radius: 3px; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; font-size: 0.95em; color: #333; } .note-block p > code, .note-block li > code { display: inline-block; } .note-block em { color: var(--light-text-color); font-size: 0.9em; }
+        .lang-button { padding: 3px 8px; font-size: 0.75em; background-color: #e9ecef; color: var(--light-text-color); border: 1px solid #ced4da; border-radius: 4px; cursor: pointer; margin-left: 15px; transition: background-color 0.2s, color 0.2s; }
+        .lang-button:hover { background-color: #dde; color: var(--text-color); }
+        footer { margin-top: 25px; text-align: center; font-size: 0.85em; color: #999; padding-bottom: 50px; }
+        footer a#creatorLink { color: #7f8c8d; font-weight: 500; text-decoration: none; transition: color 0.2s ease; }
+        footer a#creatorLink:hover { color: var(--secondary-color); }
+        .insta-popup { position: fixed; bottom: 15px; right: 15px; background-color: var(--container-bg); color: var(--text-color); padding: 0; /* Remove padding if <a> takes full space */ border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 0.85em; z-index: 1000; border: 1px solid var(--border-color); }
+        .insta-popup a { /* Make <a> the flex container */ display: flex; align-items: center; color: var(--primary-color); text-decoration: none; font-weight: 500; padding: 8px 12px; /* Padding on the <a> */ }
+        .insta-popup img { width: 18px; height: 18px; margin-right: 8px; vertical-align: middle; }
+        .insta-popup a:hover { text-decoration: underline; background-color: #f0f0f0; border-radius: 20px; }
+        input[type="range"] { -webkit-appearance: none; appearance: none; height: 8px; background: var(--slider-track-color); border-radius: 5px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; background: var(--slider-thumb-color); border-radius: 50%; cursor: pointer; transition: background-color 0.2s ease-in-out, transform 0.1s ease; }
+        input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; background: var(--slider-thumb-color); border-radius: 50%; border: none; cursor: pointer; transition: background-color 0.2s ease-in-out, transform 0.1s ease; }
+        input[type="range"]:hover::-webkit-slider-thumb, input[type="range"]:active::-webkit-slider-thumb { background: #2980b9; transform: scale(1.1); }
+        input[type="range"]:hover::-moz-range-thumb, input[type="range"]:active::-moz-range-thumb { background: #2980b9; transform: scale(1.1); }
+        @media (max-width: 768px) { .simulation-container { padding: 15px; } h1 { font-size: 1.6em; } .control-group { flex-direction: column; gap: 12px;} .control-item {width:100%;} canvas#standingWaveCanvas {height: 250px;} .insta-popup{ font-size:0.8em; padding: 0;} .insta-popup a { padding: 6px 10px;} }
+        @media (max-width: 480px) { body { padding: 5px;} h1 {font-size: 1.4em;} canvas#standingWaveCanvas {height: 200px;} .info-panel {font-size:0.85em;} .show-hide-toggles {font-size:0.8em;} .sim-button{padding:7px 15px;} .notes-header h3 {font-size:0.85em;} .lang-button {font-size:0.7em;} .notes-content { font-size:0.8em; } .insta-popup{ bottom: 10px; right: 10px;}}
+    </style>
+</head>
+<body>
+    <div class="simulation-container">
+        <div class="nav-link-home"> <a href="../../waves-vibration.html">← Back to Waves & Vibration Simulations</a> </div>
+        <h1>Standing Waves</h1>
+        <div class="controls-panel"> <div class="control-group"> <div class="control-item"> <label for="amplitudeStanding">Amplitude (A):</label> <input type="range" id="amplitudeStanding" min="10" max="100" value="50"> <span id="amplitudeStandingValue" class="value-display">50</span> </div> <div class="control-item"> <label for="modeStanding">Mode (n):</label> <input type="range" id="modeStanding" min="1" max="10" step="1" value="1"> <span id="modeStandingValue" class="value-display">1</span> </div> </div> <div class="control-group"> <div class="show-hide-toggles"> <label><input type="checkbox" id="showIncident1" checked> Show Incident Wave 1</label> <label><input type="checkbox" id="showIncident2" checked> Show Incident Wave 2</label> <label><input type="checkbox" id="showResultantStanding" checked> Show Standing Wave</label> <label><input type="checkbox" id="showParticlesStanding" checked> Show Particles</label> <!-- Added Particle Toggle --> <label><input type="checkbox" id="showEnvelope" checked> Show Envelope</label> <label><input type="checkbox" id="showNodesAntinodes" checked> Show Nodes/Antinodes</label> </div> </div> <div class="control-group global-controls"> <button id="pausePlayButtonStanding" class="sim-button">Pause</button> <button id="resetTimeButtonStanding" class="sim-button" style="margin-left:10px;">Reset Time</button> </div> </div>
+        <div class="info-panel"> <div>Mode (n): <strong id="infoMode">1</strong></div> <div>Wavelength (λ): <strong id="infoWavelength">0 m</strong></div> <div>Frequency (f): <strong id="infoFrequency">0 Hz</strong></div> <div>Node Positions: <strong id="infoNodes">N/A</strong></div> </div>
+        <canvas id="standingWaveCanvas"></canvas>
+        <section id="notesSectionStanding" class="notes-section"> <div class="notes-header"> <h3 data-lang-key="notesTitleStanding">Standing Waves: Key Concepts</h3> <button id="langToggleButtonStanding" class="lang-button" title="Change notes language">தமிழ்</button> </div> <div class="notes-content"> <!-- Language data keys will populate this --> </div> </section>
+    </div>
+    <div class="insta-popup"> <a href="https://www.instagram.com/hai_faizul/" target="_blank" rel="noopener noreferrer"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg> <span> Created by Hai</span> </a> </div>
+    <footer> A little wave fun by <a id="creatorLink" href="https://www.instagram.com/hai_faizul/" target="_blank">Hai</a>. </footer>
+
+    <script>
+        const canvas = document.getElementById('standingWaveCanvas');
+        const ctx = canvas.getContext('2d');
+        const ampSlider = document.getElementById('amplitudeStanding'); const modeSlider = document.getElementById('modeStanding'); const ampValSpan = document.getElementById('amplitudeStandingValue'); const modeValSpan = document.getElementById('modeStandingValue');
+        const showIncident1Check = document.getElementById('showIncident1'); const showIncident2Check = document.getElementById('showIncident2'); const showResultantCheck = document.getElementById('showResultantStanding'); const showParticlesCheck = document.getElementById('showParticlesStanding'); const showEnvelopeCheck = document.getElementById('showEnvelope'); const showNodesAntinodesCheck = document.getElementById('showNodesAntinodes');
+        const pausePlayBtn = document.getElementById('pausePlayButtonStanding'); const resetTimeBtn = document.getElementById('resetTimeButtonStanding');
+        const infoModeSpan = document.getElementById('infoMode'); const infoWavelengthSpan = document.getElementById('infoWavelength'); const infoFrequencySpan = document.getElementById('infoFrequency'); const infoNodesSpan = document.getElementById('infoNodes');
+
+        let A_sw, mode_n; let L_sw; let lambda_sw, k_sw, omega_sw, f_sw; const WAVE_SPEED_SW = 200;
+        let time_sw = 0; let isPaused_sw = false; let lastTimestamp_sw = 0; let animationFrameId_sw = null;
+        
+        let particles_sw = []; let num_particles_sw = 30; let highlightedParticleIndex_sw = -1;
+
+        function updateParametersStanding() {
+            A_sw = parseFloat(ampSlider.value); mode_n = parseInt(modeSlider.value); L_sw = canvas.width;
+            ampValSpan.textContent = A_sw.toFixed(0); modeValSpan.textContent = mode_n;
+            lambda_sw = (2 * L_sw) / mode_n; k_sw = (2 * Math.PI) / lambda_sw; f_sw = WAVE_SPEED_SW / lambda_sw; omega_sw = 2 * Math.PI * f_sw;
+            infoModeSpan.textContent = mode_n; infoWavelengthSpan.textContent = lambda_sw.toFixed(1) + " px"; infoFrequencySpan.textContent = f_sw.toFixed(2) + " Hz";
+            let nodePositions = []; for (let m = 0; m <= mode_n; m++) { nodePositions.push((m * lambda_sw / 2).toFixed(0)); } infoNodesSpan.textContent = nodePositions.join(', ') + " px";
+            
+            particles_sw = []; highlightedParticleIndex_sw = -1;
+            if(num_particles_sw > 0 && L_sw > 0){
+                const particleSpacing = L_sw / (num_particles_sw +1);
+                for(let i=0; i < num_particles_sw; i++){ particles_sw.push({ originalX: particleSpacing * (i+1)}); }
+                if(num_particles_sw > 0) highlightedParticleIndex_sw = Math.floor((num_particles_sw -1) / 2);
+            }
+
+            if (isPaused_sw) { drawFrameStanding(); } else if (!animationFrameId_sw) { lastTimestamp_sw = performance.now(); animationFrameId_sw = requestAnimationFrame(animateStanding); }
+        }
+
+        function getStandingWaveY(x, t) { return (2 * A_sw * Math.sin(k_sw * x)) * Math.cos(omega_sw * t); }
+        function getIncidentWave1Y(x,t){ return A_sw * Math.sin(k_sw * x - omega_sw * t); }
+        function getIncidentWave2Y(x,t){ return A_sw * Math.sin(k_sw * x + omega_sw * t + Math.PI); /* Phase inverted reflected wave */ }
+
+        function drawParticlesStanding(y_center) {
+            if (!showParticlesCheck.checked || particles_sw.length === 0) return;
+            const particleRadius = 4;
+            const defaultParticleColor = getComputedStyle(document.documentElement).getPropertyValue('--particle-standing-color').trim();
+            const highlightParticleColor = getComputedStyle(document.documentElement).getPropertyValue('--highlight-color').trim();
+            const envelopeMaxAmplitude = 2 * A_sw;
+
+            particles_sw.forEach((particle, index) => {
+                const equilibriumX = particle.originalX;
+                const currentY = getStandingWaveY(equilibriumX, time_sw);
+                
+                // SHM Path lines
+                const particleMaxOscillation = Math.abs(2 * A_sw * Math.sin(k_sw * equilibriumX)); // Envelope at this particle's X
+                ctx.beginPath();
+                ctx.moveTo(equilibriumX, y_center - particleMaxOscillation);
+                ctx.lineTo(equilibriumX, y_center + particleMaxOscillation);
+                ctx.strokeStyle = 'rgba(150, 150, 150, 0.3)'; ctx.setLineDash([2, 2]); ctx.lineWidth = 0.8; ctx.stroke(); ctx.setLineDash([]);
+
+                ctx.fillStyle = (index === highlightedParticleIndex_sw) ? highlightParticleColor : defaultParticleColor;
+                ctx.beginPath(); ctx.arc(equilibriumX, y_center + currentY, particleRadius, 0, 2 * Math.PI); ctx.fill();
+            });
+        }
+
+
+        function drawFrameStanding() {
+            if (!ctx || !canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height); const y_center = canvas.height / 2;
+            ctx.beginPath(); ctx.moveTo(0, y_center); ctx.lineTo(canvas.width, y_center); ctx.strokeStyle = 'rgba(150, 150, 150, 0.6)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+            if (showEnvelopeCheck.checked) { ctx.beginPath(); ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--envelope-color').trim(); ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.moveTo(0, y_center + 2 * A_sw * Math.abs(Math.sin(k_sw * 0))); for (let x_px = 1; x_px <= canvas.width; x_px++) { ctx.lineTo(x_px, y_center + 2 * A_sw * Math.abs(Math.sin(k_sw * x_px))); } ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, y_center - 2 * A_sw * Math.abs(Math.sin(k_sw * 0))); for (let x_px = 1; x_px <= canvas.width; x_px++) { ctx.lineTo(x_px, y_center - 2 * A_sw * Math.abs(Math.sin(k_sw * x_px))); } ctx.stroke(); ctx.setLineDash([]); }
+            if (showIncident1Check.checked) { ctx.beginPath(); ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--incident-wave1-color').trim(); ctx.lineWidth = 1.5; ctx.setLineDash([5,5]); ctx.moveTo(0, y_center + getIncidentWave1Y(0, time_sw)); for (let x_px = 1; x_px <= canvas.width; x_px++) { ctx.lineTo(x_px, y_center + getIncidentWave1Y(x_px, time_sw)); } ctx.stroke(); ctx.setLineDash([]); }
+            if (showIncident2Check.checked) { ctx.beginPath(); ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--incident-wave2-color').trim(); ctx.lineWidth = 1.5; ctx.setLineDash([3,3]); ctx.moveTo(0, y_center + getIncidentWave2Y(0, time_sw)); for (let x_px = 1; x_px <= canvas.width; x_px++) { ctx.lineTo(x_px, y_center + getIncidentWave2Y(x_px, time_sw)); } ctx.stroke(); ctx.setLineDash([]); }
+            if (showResultantCheck.checked) { ctx.beginPath(); ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--standing-wave-color').trim(); ctx.lineWidth = 2.5; ctx.moveTo(0, y_center + getStandingWaveY(0, time_sw)); for (let x_px = 1; x_px <= canvas.width; x_px++) { ctx.lineTo(x_px, y_center + getStandingWaveY(x_px, time_sw)); } ctx.stroke(); }
+            drawParticlesStanding(y_center); // ADDED CALL
+            if (showNodesAntinodesCheck.checked) { const nodeRadius = 4; const antinodeRadius = 5; for (let m = 0; m <= mode_n; m++) { const nodeX = m * (lambda_sw / 2); if (nodeX <= L_sw + 1) { ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--node-color').trim(); ctx.beginPath(); ctx.arc(nodeX, y_center, nodeRadius, 0, 2 * Math.PI); ctx.fill(); } } for (let m = 0; m < mode_n; m++) { const antinodeX = (m + 0.5) * (lambda_sw / 2); if (antinodeX <= L_sw) { ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--antinode-color').trim(); ctx.beginPath(); ctx.arc(antinodeX, y_center, antinodeRadius, 0, 2 * Math.PI); ctx.fill(); } } }
+        }
+        function animateStanding(timestamp) { if (!isPaused_sw) { if (!lastTimestamp_sw) lastTimestamp_sw = timestamp; const deltaTime = (timestamp - lastTimestamp_sw) / 1000; lastTimestamp_sw = timestamp; if (!isNaN(deltaTime) && deltaTime > 0 && deltaTime < 0.5) time_sw += deltaTime; } drawFrameStanding(); if (!isPaused_sw) animationFrameId_sw = requestAnimationFrame(animateStanding); else { if (animationFrameId_sw) cancelAnimationFrame(animationFrameId_sw); animationFrameId_sw = null; } }
+        
+        ampSlider.addEventListener('input', updateParametersStanding); modeSlider.addEventListener('input', updateParametersStanding);
+        [showIncident1Check, showIncident2Check, showResultantCheck, showParticlesCheck, showEnvelopeCheck, showNodesAntinodesCheck].forEach(check => { check.addEventListener('change', () => { if(isPaused_sw) drawFrameStanding(); }); });
+        pausePlayBtn.addEventListener('click', () => { isPaused_sw = !isPaused_sw; pausePlayBtn.textContent = isPaused_sw ? 'Play' : 'Pause'; if (!isPaused_sw) { lastTimestamp_sw = performance.now(); if(!animationFrameId_sw) animationFrameId_sw = requestAnimationFrame(animateStanding);} else { if(animationFrameId_sw) cancelAnimationFrame(animationFrameId_sw); animationFrameId_sw = null; }});
+        resetTimeBtn.addEventListener('click', () => { time_sw = 0; /* Simple reset, wave starts from cos(0) peak */ if (isPaused_sw) drawFrameStanding(); else { lastTimestamp_sw = performance.now(); if(!animationFrameId_sw) animationFrameId_sw = requestAnimationFrame(animateStanding); }});
+
+        const langToggleButtonStanding = document.getElementById('langToggleButtonStanding'); let currentNotesLanguageStanding = 'en';
+        const languageDataStanding = { /* YOUR LANGUAGE DATA HERE - MAKE SURE IT'S POPULATED */ notesTitleStanding: {en: "Standing Waves: Key Concepts", ta: "நிலை அலைகள்: முக்கிய கருத்துகள்"}, whatAreStandingWaves: {en: "What are Standing Waves?", ta: "நிலை அலைகள் என்றால் என்ன?"}, standingWavesDesc: {en: "A standing wave, also known as a stationary wave, is a wave that oscillates in time but whose peak amplitude profile does not move in space. It results from the interference of two identical waves (same amplitude, frequency, and wavelength) traveling in opposite directions in the same medium.", ta: "நிலை அலை என்பது, நேரத்தைப் பொறுத்து அலைவுறும் ஆனால் அதன் உச்ச வீச்சு வெளிப்பாட்டில் நகராத ஒரு அலை. ஒரே ஊடகத்தில் எதிர் திசைகளில் பயணிக்கும் ஒரே மாதிரியான இரண்டு அலைகளின் (ஒரே வீச்சு, அதிர்வெண் மற்றும் அலைநீளம்) குறுக்கீட்டின் விளைவாக இது ஏற்படுகிறது."}, nodesAntinodesTitle: {en: "Nodes and Antinodes", ta: "கணுக்கள் மற்றும் எதிர்கணுக்கள்"}, nodesDesc: {en: "<strong>Nodes:</strong> Points along the standing wave where the amplitude of oscillation is always zero. These points remain stationary.", ta: "<strong>கணுக்கள்:</strong> நிலை அலையில் அதிர்வின் வீச்சு எப்போதும் பூஜ்ஜியமாக இருக்கும் புள்ளிகள். இந்தப் புள்ளிகள் நிலையாக இருக்கும்."}, antinodesDesc: {en: "<strong>Antinodes:</strong> Points along the standing wave where the amplitude of oscillation is maximum. These points oscillate with the largest displacement (2A).", ta: "<strong>எதிர்கணுக்கள்:</strong> நிலை அலையில் அதிர்வின் வீச்சு அதிகபட்சமாக இருக்கும் புள்ளிகள். இந்தப் புள்ளிகள் மிகப்பெரிய இடப்பெயர்ச்சியுடன் (2A) அலைவுறுகின்றன."}, conditionsTitle: {en: "Conditions for Fixed Ends (e.g., a String)", ta: "நிலையான முனைகளுக்கான நிபந்தனைகள் (எ.கா., ஒரு கம்பி)"}, conditionsDesc: {en: "For a string of length L fixed at both ends, standing waves can only form if the length of the string is an integer multiple of half wavelengths:", ta: "இரு முனைகளிலும் கட்டப்பட்ட L நீளமுள்ள ஒரு கம்பிக்கு, கம்பியின் நீளம் அரை அலைநீளங்களின் முழு எண் மடங்காக இருந்தால் மட்டுமே நிலை அலைகள் உருவாக முடியும்:"}, conditionFormula: {en: "<code>L = n * (λ / 2)</code>   or   <code>λ = 2L / n</code>", ta: "<code>L = n * (λ / 2)</code>   அல்லது   <code>λ = 2L / n</code>"}, conditionVariables: {en: "Where: <code>L</code> is the length, <code>λ</code> is the wavelength, and <code>n</code> is the mode number (or harmonic number), n = 1, 2, 3, ...", ta: "இங்கு: <code>L</code> என்பது நீளம், <code>λ</code> என்பது அலைநீளம், மற்றும் <code>n</code> என்பது மோடு எண் (அல்லது ஹார்மோனிக் எண்), n = 1, 2, 3, ..."}, fundamentalHarmonic: {en: "<code>n=1</code>: Fundamental frequency (1st harmonic). Longest wavelength (λ = 2L).", ta: "<code>n=1</code>: அடிப்படை அதிர்வெண் (1வது ஹார்மோனிக்). மிக நீளமான அலைநீளம் (λ = 2L)."}, overtonesHarmonic: {en: "<code>n=2, 3, ...</code>: Overtones (2nd harmonic, 3rd harmonic, etc.).", ta: "<code>n=2, 3, ...</code>: மேற்சுரங்கள் (2வது ஹார்மோனிக், 3வது ஹார்மோனிக், முதலியன)."}, tipsStandingTitle: {en: "Simulation Tips", ta: "உருவகப்படுத்துதல் குறிப்புகள்"}, tipMode: {en: "Change the 'Mode (n)' to see different harmonic patterns. Notice how the number of antinodes equals 'n'.", ta: "'மோடு (n)' மாற்றுவதன் மூலம் வெவ்வேறு ஹார்மோனிக் வடிவங்களைக் காணவும். எதிர் கணுக்களின் எண்ணிக்கை 'n'-க்கு சமமாக இருப்பதைக் கவனியுங்கள்."}, tipIncident: {en: "Toggle the 'Show Incident Waves' to see the two component waves that form the standing wave.", ta: "நிலை அலையை உருவாக்கும் இரண்டு கூறு அலைகளைக் காண 'Show Incident Waves' ஐ மாற்றவும்."}, tipEnvelope: {en: "The 'Envelope' shows the maximum displacement profile of the standing wave.", ta: "'உறை' நிலை அலையின் அதிகபட்ச இடப்பெயர்ச்சி சுயவிவரத்தைக் காட்டுகிறது."}};
+        function updateNotesLanguageStanding(lang) { document.querySelectorAll('[data-lang-key]').forEach(element => { const key = element.getAttribute('data-lang-key'); if (languageDataStanding[key] && languageDataStanding[key][lang]) { element.innerHTML = languageDataStanding[key][lang]; } }); langToggleButtonStanding.textContent = lang === 'en' ? 'தமிழ்' : 'English';}
+        langToggleButtonStanding.addEventListener('click', (event) => { event.stopPropagation(); currentNotesLanguageStanding = (currentNotesLanguageStanding === 'en') ? 'ta' : 'en'; updateNotesLanguageStanding(currentNotesLanguageStanding);});
+
+        function resizeCanvasStanding() { canvas.width = canvas.offsetWidth; canvas.height = 300; L_sw = canvas.width; updateParametersStanding(); }
+        document.addEventListener('DOMContentLoaded', () => {
+            resizeCanvasStanding(); window.addEventListener('resize', resizeCanvasStanding);
+            updateNotesLanguageStanding(currentNotesLanguageStanding); // Ensure notes are populated initially
+            const notesSection = document.getElementById('notesSectionStanding');
+            const notesHeader = notesSection.querySelector('.notes-header');
+            if (notesHeader && notesSection) { notesHeader.addEventListener('click', (event) => { if (event.target !== langToggleButtonStanding && !langToggleButtonStanding.contains(event.target)) { notesSection.classList.toggle('notes-open'); } }); }
+             if (!isPaused_sw) { lastTimestamp_sw = performance.now(); animationFrameId_sw = requestAnimationFrame(animateStanding); } else { drawFrameStanding(); }
+        });
+    </script>
+</body>
+</html>

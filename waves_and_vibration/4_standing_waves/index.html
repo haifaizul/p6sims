@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standing Waves Simulation - p6sims</title>
+    <link rel="stylesheet" href="../../style.css">
+    <style>
+        /* Simulation Specific Overrides */
+        .simulation-wrapper {
+            max-width: 900px;
+        }
+
+        .controls-panel {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .control-group:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            flex: 1 1 250px;
+        }
+
+        .control-item label {
+            min-width: 140px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .control-item input[type="range"] {
+            flex-grow: 1;
+            margin: 0 10px;
+        }
+
+        .value-display {
+            min-width: 60px;
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            background: var(--bg-secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--text-primary);
+        }
+
+        .toggles-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 0.5rem 0;
+        }
+
+        .toggles-group label {
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            user-select: none;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding-top: 0.5rem;
+        }
+
+        .info-panel {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            background-color: var(--bg-secondary);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .info-panel strong {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        canvas#standingWaveCanvas {
+            width: 100%;
+            height: 400px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Notes Section (Shared Style) */
+        .notes-section {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .notes-header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .notes-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .notes-header::after {
+            content: '▸';
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            transition: transform 0.2s ease;
+        }
+
+        .notes-section.notes-open .notes-header::after {
+            transform: rotate(90deg);
+        }
+
+        .notes-content {
+            display: none;
+            padding: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .notes-section.notes-open .notes-content {
+            display: block;
+        }
+
+        .note-block {
+            margin-bottom: 1.5rem;
+        }
+
+        .note-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .note-block h4 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .note-block ul {
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .note-block li {
+            margin-bottom: 0.25rem;
+        }
+
+        code {
+            background: var(--bg-secondary);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+            font-size: 0.9em;
+            color: var(--primary-color);
+        }
+
+        .lang-button {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .lang-button:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Variables for Canvas Drawing */
+        :root {
+            --incident-wave-color: rgba(59, 130, 246, 0.4);
+            /* Blue-500, low opacity */
+            --reflected-wave-color: rgba(244, 63, 94, 0.4);
+            /* Rose-500, low opacity */
+            --standing-wave-color: #6366f1;
+            /* Indigo-500 */
+            --envelope-color: rgba(99, 102, 241, 0.15);
+            /* Indigo-500, very low opacity */
+            --node-color: #ef4444;
+            /* Red-500 */
+            --antinode-color: #10b981;
+            /* Emerald-500 */
+            --particle-color-stand: #0f172a;
+            /* Slate-900 */
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="header-content">
+            <a href="../../index.html" class="logo">p6sims</a>
+            <nav class="site-nav">
+                <a href="../../index.html#topics">Topics</a>
+                <a href="../../index.html#about">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="simulation-wrapper">
+            <div class="back-link">
+                <a href="../../waves-vibration.html">← Back to Waves & Vibration</a>
+            </div>
+
+            <h1>Standing Waves Simulation</h1>
+
+            <div class="controls-panel">
+                <div class="control-group">
+                    <div class="control-item">
+                        <label for="amplitudeStand">Amplitude (A)</label>
+                        <input type="range" id="amplitudeStand" min="10" max="80" value="40">
+                        <span id="amplitudeStandValue" class="value-display">40</span>
+                    </div>
+                    <div class="control-item">
+                        <label for="modeStand">Harmonic Mode (n)</label>
+                        <input type="range" id="modeStand" min="1" max="10" step="1" value="1">
+                        <span id="modeStandValue" class="value-display">n=1</span>
+                    </div>
+                </div>
+
+                <div class="control-group toggles-group">
+                    <label><input type="checkbox" id="showIncident" checked> Incident Wave (Blue)</label>
+                    <label><input type="checkbox" id="showReflected" checked> Reflected Wave (Red)</label>
+                    <label><input type="checkbox" id="showResultantStand" checked> Resultant Standing Wave</label>
+                    <label><input type="checkbox" id="showEnvelope"> Show Envelope</label>
+                    <label><input type="checkbox" id="showNodes"> Show Nodes/Antinodes</label>
+                    <label><input type="checkbox" id="showParticlesStand"> Show Particles</label>
+                </div>
+
+                <div class="control-group button-actions">
+                    <button id="pausePlayButtonStand" class="btn btn-primary">Pause</button>
+                    <button id="resetButtonStand" class="btn btn-secondary">Reset Time</button>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                Frequency: <strong id="freqStandValue">0.50 Hz</strong> | Wavelength: <strong
+                    id="wavelengthStandValue">0.00 m</strong> | Speed: <strong id="speedStandValue">200.0 m/s</strong>
+            </div>
+
+            <canvas id="standingWaveCanvas"></canvas>
+
+            <section id="notesSectionStand" class="notes-section">
+                <div class="notes-header">
+                    <h3 data-lang-key="notesTitleStand">Standing Waves: Key Concepts</h3>
+                    <button id="langToggleButtonStand" class="lang-button" title="Change notes language">தமிழ்</button>
+                </div>
+                <div class="notes-content">
+                    <div class="note-block">
+                        <h4 data-lang-key="whatIsStandingTitle">What is a Standing Wave?</h4>
+                        <p data-lang-key="whatIsStandingDesc">A standing wave (or stationary wave) is formed by the
+                            superposition of two waves of the same frequency and amplitude traveling in opposite
+                            directions. Unlike traveling waves, standing waves do not transmit energy from one place to
+                            another.</p>
+                    </div>
+                    <div class="note-block">
+                        <h4 data-lang-key="nodesAntinodesTitle">Nodes and Antinodes</h4>
+                        <ul>
+                            <li data-lang-key="nodeDesc"><strong>Nodes (N):</strong> Points of zero amplitude where
+                                destructive interference always occurs. The particles at nodes remain at rest.</li>
+                            <li data-lang-key="antinodeDesc"><strong>Antinodes (A):</strong> Points of maximum amplitude
+                                where constructive interference occurs. The particles at antinodes oscillate with
+                                maximum displacement.</li>
+                        </ul>
+                    </div>
+                    <div class="note-block">
+                        <h4 data-lang-key="harmonicsTitle">Harmonics (Modes of Vibration)</h4>
+                        <p data-lang-key="harmonicsDesc">For a string fixed at both ends of length L:</p>
+                        <ul>
+                            <li data-lang-key="fundFreq"><strong>Fundamental Frequency (1st Harmonic, n=1):</strong> The
+                                lowest frequency of vibration. <code>λ₁ = 2L</code>. Has 2 nodes (ends) and 1 antinode.
+                            </li>
+                            <li data-lang-key="nthHarmonic"><strong>nth Harmonic:</strong> <code>λₙ = 2L/n</code> and
+                                <code>fₙ = n·f₁</code>. Has <code>n+1</code> nodes and <code>n</code> antinodes.</li>
+                        </ul>
+                    </div>
+                    <div class="note-block">
+                        <h4 data-lang-key="tipsStandTitle">Simulation Tips</h4>
+                        <ul>
+                            <li data-lang-key="tipMode">Change the "Harmonic Mode (n)" to see different vibration
+                                patterns. Notice how the number of "loops" equals n.</li>
+                            <li data-lang-key="tipEnvelope">Toggle "Show Envelope" to visualize the maximum displacement
+                                limits of the standing wave.</li>
+                            <li data-lang-key="tipComponents">Toggle "Incident Wave" and "Reflected Wave" to see the two
+                                traveling waves that combine to form the standing wave. Notice they move through each
+                                other.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2023 p6sims. Built by <a href="https://www.instagram.com/hai_faizul/" target="_blank">Hai</a>.</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('standingWaveCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const amplitudeSlider = document.getElementById('amplitudeStand');
+        const modeSlider = document.getElementById('modeStand');
+        const amplitudeValueSpan = document.getElementById('amplitudeStandValue');
+        const modeValueSpan = document.getElementById('modeStandValue');
+        const freqValueSpan = document.getElementById('freqStandValue');
+        const wavelengthValueSpan = document.getElementById('wavelengthStandValue');
+        const speedValueSpan = document.getElementById('speedStandValue');
+
+        const showIncidentCheck = document.getElementById('showIncident');
+        const showReflectedCheck = document.getElementById('showReflected');
+        const showResultantCheck = document.getElementById('showResultantStand');
+        const showEnvelopeCheck = document.getElementById('showEnvelope');
+        const showNodesCheck = document.getElementById('showNodes');
+        const showParticlesCheck = document.getElementById('showParticlesStand');
+        const pausePlayButton = document.getElementById('pausePlayButtonStand');
+        const resetButton = document.getElementById('resetButtonStand');
+
+        let A_stand, n_mode, L_string;
+        let lambda_stand, k_stand, omega_stand, f_stand, v_wave;
+        let timeStand = 0;
+        let isPausedStand = false;
+        let lastTimestampStand = 0;
+        let animationFrameIdStand = null;
+
+        // Fixed wave speed for this simulation to make changing 'n' change frequency naturally
+        const FIXED_WAVE_SPEED = 200; // pixels per second (arbitrary units)
+
+        let numParticlesStand = 40;
+        let particlesStand = [];
+
+        function updateParametersStand() {
+            A_stand = parseFloat(amplitudeSlider.value);
+            n_mode = parseInt(modeSlider.value);
+            L_string = canvas.width; // String length is canvas width
+
+            // Physics: v = f * lambda
+            // For standing wave on string fixed at both ends: lambda = 2L / n
+            lambda_stand = (2 * L_string) / n_mode;
+            v_wave = FIXED_WAVE_SPEED;
+            f_stand = v_wave / lambda_stand;
+
+            k_stand = 2 * Math.PI / lambda_stand;
+            omega_stand = 2 * Math.PI * f_stand;
+
+            amplitudeValueSpan.textContent = A_stand.toFixed(0);
+            modeValueSpan.textContent = "n=" + n_mode;
+            freqValueSpan.textContent = f_stand.toFixed(2) + " Hz";
+            wavelengthValueSpan.textContent = (lambda_stand / 100).toFixed(2) + " m"; // Scale down for display
+            speedValueSpan.textContent = v_wave.toFixed(1) + " m/s";
+
+            particlesStand = [];
+            if (numParticlesStand > 0 && canvas.width > 0) {
+                const particleSpacing = canvas.width / numParticlesStand;
+                for (let i = 0; i <= numParticlesStand; i++) {
+                    particlesStand.push({ originalX: i * particleSpacing });
+                }
+            }
+
+            if (isPausedStand) { drawFrameStand(); }
+            else if (!animationFrameIdStand) { lastTimestampStand = performance.now(); animationFrameIdStand = requestAnimationFrame(animateStand); }
+        }
+
+        function drawFrameStand() {
+            if (!ctx || !canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const y_center = canvas.height / 2;
+
+            // Draw String Equilibrium Line
+            ctx.beginPath(); ctx.moveTo(0, y_center); ctx.lineTo(canvas.width, y_center);
+            ctx.strokeStyle = 'rgba(150, 150, 150, 0.3)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+
+            // Draw Envelope
+            if (showEnvelopeCheck.checked) {
+                ctx.beginPath();
+                ctx.moveTo(0, y_center);
+                for (let x = 0; x <= canvas.width; x++) {
+                    // Max amplitude at x is 2A * sin(kx)
+                    const envelopeY = 2 * A_stand * Math.sin(k_stand * x);
+                    ctx.lineTo(x, y_center - Math.abs(envelopeY));
+                }
+                for (let x = canvas.width; x >= 0; x--) {
+                    const envelopeY = 2 * A_stand * Math.sin(k_stand * x);
+                    ctx.lineTo(x, y_center + Math.abs(envelopeY));
+                }
+                ctx.closePath();
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--envelope-color').trim();
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(99, 102, 241, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Draw Incident Wave (Traveling Right)
+            if (showIncidentCheck.checked) {
+                ctx.beginPath();
+                for (let x = 0; x <= canvas.width; x++) {
+                    // y1 = A sin(kx - wt)
+                    const y1 = A_stand * Math.sin(k_stand * x - omega_stand * timeStand);
+                    if (x === 0) ctx.moveTo(x, y_center + y1);
+                    else ctx.lineTo(x, y_center + y1);
+                }
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--incident-wave-color').trim();
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Draw Reflected Wave (Traveling Left)
+            if (showReflectedCheck.checked) {
+                ctx.beginPath();
+                for (let x = 0; x <= canvas.width; x++) {
+                    // y2 = A sin(kx + wt) (Simplified reflection model for visualization)
+                    // Ideally reflection at fixed end introduces phase shift, but for simple standing wave viz:
+                    // y_stand = 2A sin(kx)cos(wt). This comes from y1=sin(kx-wt) + y2=sin(kx+wt).
+                    const y2 = A_stand * Math.sin(k_stand * x + omega_stand * timeStand);
+                    if (x === 0) ctx.moveTo(x, y_center + y2);
+                    else ctx.lineTo(x, y_center + y2);
+                }
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--reflected-wave-color').trim();
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Draw Resultant Standing Wave
+            if (showResultantCheck.checked) {
+                ctx.beginPath();
+                for (let x = 0; x <= canvas.width; x++) {
+                    // y = 2A sin(kx) cos(wt)
+                    const y = 2 * A_stand * Math.sin(k_stand * x) * Math.cos(omega_stand * timeStand);
+                    if (x === 0) ctx.moveTo(x, y_center + y);
+                    else ctx.lineTo(x, y_center + y);
+                }
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--standing-wave-color').trim();
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+
+            // Draw Particles
+            if (showParticlesCheck.checked) {
+                const particleRadius = 4;
+                const particleColor = getComputedStyle(document.documentElement).getPropertyValue('--particle-color-stand').trim();
+                ctx.fillStyle = particleColor;
+                particlesStand.forEach(p => {
+                    const x = p.originalX;
+                    const y = 2 * A_stand * Math.sin(k_stand * x) * Math.cos(omega_stand * timeStand);
+                    ctx.beginPath();
+                    ctx.arc(x, y_center + y, particleRadius, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+            }
+
+            // Draw Nodes and Antinodes
+            if (showNodesCheck.checked) {
+                const nodeColor = getComputedStyle(document.documentElement).getPropertyValue('--node-color').trim();
+                const antinodeColor = getComputedStyle(document.documentElement).getPropertyValue('--antinode-color').trim();
+
+                // Nodes are at x where sin(kx) = 0 => kx = m*pi => (2pi/lambda)*x = m*pi => x = m*lambda/2
+                for (let m = 0; m <= n_mode; m++) {
+                    const nodeX = m * (lambda_stand / 2);
+                    if (nodeX >= -1 && nodeX <= canvas.width + 1) {
+                        ctx.beginPath();
+                        ctx.arc(nodeX, y_center, 5, 0, 2 * Math.PI);
+                        ctx.fillStyle = nodeColor;
+                        ctx.fill();
+                        ctx.fillStyle = "#333";
+                        ctx.font = "10px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText("N", nodeX, y_center + 15);
+                    }
+                }
+
+                // Antinodes are at x where sin(kx) = +/-1 => kx = (m + 0.5)*pi => x = (m + 0.5)*lambda/2
+                for (let m = 0; m < n_mode; m++) {
+                    const antinodeX = (m + 0.5) * (lambda_stand / 2);
+                    if (antinodeX >= 0 && antinodeX <= canvas.width) {
+                        ctx.beginPath();
+                        // Antinodes oscillate, so we draw them at current amplitude position or just mark the x-position
+                        // Let's mark the x-position on the axis
+                        ctx.arc(antinodeX, y_center, 3, 0, 2 * Math.PI);
+                        ctx.fillStyle = antinodeColor;
+                        ctx.fill();
+                        ctx.fillStyle = "#333";
+                        ctx.font = "10px Arial";
+                        ctx.textAlign = "center";
+                        ctx.fillText("A", antinodeX, y_center - 10);
+                    }
+                }
+            }
+        }
+
+        function animateStand(timestamp) {
+            if (!isPausedStand) {
+                if (!lastTimestampStand) lastTimestampStand = timestamp;
+                const deltaTime = (timestamp - lastTimestampStand) / 1000;
+                lastTimestampStand = timestamp;
+                if (!isNaN(deltaTime) && deltaTime > 0 && deltaTime < 0.5) timeStand += deltaTime;
+            }
+            drawFrameStand();
+            if (!isPausedStand) animationFrameIdStand = requestAnimationFrame(animateStand);
+            else { if (animationFrameIdStand) cancelAnimationFrame(animationFrameIdStand); animationFrameIdStand = null; }
+        }
+
+        amplitudeSlider.addEventListener('input', updateParametersStand);
+        modeSlider.addEventListener('input', updateParametersStand);
+        [showIncidentCheck, showReflectedCheck, showResultantCheck, showEnvelopeCheck, showNodesCheck, showParticlesCheck].forEach(check => {
+            check.addEventListener('change', () => { if (isPausedStand) drawFrameStand(); });
+        });
+
+        pausePlayButton.addEventListener('click', () => {
+            isPausedStand = !isPausedStand;
+            pausePlayButton.textContent = isPausedStand ? 'Play' : 'Pause';
+            if (!isPausedStand) {
+                lastTimestampStand = performance.now();
+                if (!animationFrameIdStand) animationFrameIdStand = requestAnimationFrame(animateStand);
+            } else {
+                if (animationFrameIdStand) cancelAnimationFrame(animationFrameIdStand);
+                animationFrameIdStand = null;
+            }
+        });
+
+        resetButton.addEventListener('click', () => {
+            timeStand = 0;
+            if (isPausedStand) drawFrameStand();
+            else {
+                lastTimestampStand = performance.now();
+                if (!animationFrameIdStand) animationFrameIdStand = requestAnimationFrame(animateStand);
+            }
+        });
+
+        const langToggleButtonStand = document.getElementById('langToggleButtonStand');
+        let currentNotesLanguageStand = 'en';
+        const languageDataStand = {
+            notesTitleStand: { en: "Standing Waves: Key Concepts", ta: "நிலை அலைகள்: முக்கிய கருத்துகள்" },
+            whatIsStandingTitle: { en: "What is a Standing Wave?", ta: "நிலை அலை என்றால் என்ன?" },
+            whatIsStandingDesc: { en: "A standing wave (or stationary wave) is formed by the superposition of two waves of the same frequency and amplitude traveling in opposite directions. Unlike traveling waves, standing waves do not transmit energy from one place to another.", ta: "எதிர் திசைகளில் பயணிக்கும் ஒரே அதிர்வெண் மற்றும் வீச்சு கொண்ட இரண்டு அலைகளின் மேற்பொருந்துதலால் ஒரு நிலை அலை (அல்லது நிலையான அலை) உருவாகிறது. பயணிக்கும் அலைகளைப் போலன்றி, நிலை அலைகள் ஆற்றலை ஒரு இடத்திலிருந்து மற்றொரு இடத்திற்கு மாற்றுவதில்லை." },
+            nodesAntinodesTitle: { en: "Nodes and Antinodes", ta: "கணுக்கள் மற்றும் எதிர்க்கணுக்கள்" },
+            nodeDesc: { en: "<strong>Nodes (N):</strong> Points of zero amplitude where destructive interference always occurs. The particles at nodes remain at rest.", ta: "<strong>கணுக்கள் (N):</strong> அழிவு குறுக்கீடு எப்போதும் ஏற்படும் பூஜ்ஜிய வீச்சின் புள்ளிகள். கணுக்களில் உள்ள துகள்கள் ஓய்வில் இருக்கும்." },
+            antinodeDesc: { en: "<strong>Antinodes (A):</strong> Points of maximum amplitude where constructive interference occurs. The particles at antinodes oscillate with maximum displacement.", ta: "<strong>எதிர்க்கணுக்கள் (A):</strong> ஆக்க குறுக்கீடு ஏற்படும் அதிகபட்ச வீச்சின் புள்ளிகள். எதிர்க்கணுக்களில் உள்ள துகள்கள் அதிகபட்ச இடப்பெயர்ச்சியுடன் அதிர்கின்றன." },
+            harmonicsTitle: { en: "Harmonics (Modes of Vibration)", ta: "சீரிசைகள் (அதிர்வு முறைகள்)" },
+            harmonicsDesc: { en: "For a string fixed at both ends of length L:", ta: "இரு முனைகளிலும் நிலையான நீளம் L கொண்ட ஒரு கம்பியில்:" },
+            fundFreq: { en: "<strong>Fundamental Frequency (1st Harmonic, n=1):</strong> The lowest frequency of vibration. <code>λ₁ = 2L</code>. Has 2 nodes (ends) and 1 antinode.", ta: "<strong>அடிப்படை அதிர்வெண் (முதல் சீரிசை, n=1):</strong> அதிர்வின் மிகக் குறைந்த அதிர்வெண். <code>λ₁ = 2L</code>. 2 கணுக்கள் (முனைகள்) மற்றும் 1 எதிர்க்கணுவைக் கொண்டுள்ளது." },
+            nthHarmonic: { en: "<strong>nth Harmonic:</strong> <code>λₙ = 2L/n</code> and <code>fₙ = n·f₁</code>. Has <code>n+1</code> nodes and <code>n</code> antinodes.", ta: "<strong>n-வது சீரிசை:</strong> <code>λₙ = 2L/n</code> மற்றும் <code>fₙ = n·f₁</code>. <code>n+1</code> கணுக்கள் மற்றும் <code>n</code> எதிர்க்கணுக்களைக் கொண்டுள்ளது." },
+            tipsStandTitle: { en: "Simulation Tips", ta: "உருவகப்படுத்துதல் குறிப்புகள்" },
+            tipMode: { en: "Change the \"Harmonic Mode (n)\" to see different vibration patterns. Notice how the number of \"loops\" equals n.", ta: "வெவ்வேறு அதிர்வு வடிவங்களைக் காண \"சீரிசை முறை (n)\" ஐ மாற்றவும். \"கண்ணிகளின்\" எண்ணிக்கை n க்கு சமமாக இருப்பதை கவனிக்கவும்." },
+            tipEnvelope: { en: "Toggle \"Show Envelope\" to visualize the maximum displacement limits of the standing wave.", ta: "நிலை அலையின் அதிகபட்ச இடப்பெயர்ச்சி வரம்புகளைக் காட்சிப்படுத்த \"உறையைக் காட்டு\" என்பதை மாற்றவும்." },
+            tipComponents: { en: "Toggle \"Incident Wave\" and \"Reflected Wave\" to see the two traveling waves that combine to form the standing wave. Notice they move through each other.", ta: "நிலை அலையை உருவாக்க இணையும் இரண்டு பயணிக்கும் அலைகளைக் காண \"படுகதிர் அலை\" மற்றும் \"எதிரொளிப்பு அலை\" ஆகியவற்றை மாற்றவும். அவை ஒன்றையொன்று கடந்து செல்வதைக் கவனியுங்கள்." }
+        };
+
+        function updateNotesLanguageStand(lang) {
+            document.querySelectorAll('[data-lang-key]').forEach(element => {
+                const key = element.getAttribute('data-lang-key');
+                if (languageDataStand[key] && languageDataStand[key][lang]) {
+                    element.innerHTML = languageDataStand[key][lang];
+                }
+            });
+            langToggleButtonStand.textContent = lang === 'en' ? 'தமிழ்' : 'English';
+        }
+
+        langToggleButtonStand.addEventListener('click', (event) => {
+            event.stopPropagation();
+            currentNotesLanguageStand = (currentNotesLanguageStand === 'en') ? 'ta' : 'en';
+            updateNotesLanguageStand(currentNotesLanguageStand);
+        });
+
+        function resizeCanvasStand() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 400;
+            updateParametersStand();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            resizeCanvasStand();
+            window.addEventListener('resize', resizeCanvasStand);
+            updateNotesLanguageStand(currentNotesLanguageStand);
+
+            const notesSection = document.getElementById('notesSectionStand');
+            const notesHeader = notesSection.querySelector('.notes-header');
+            if (notesHeader && notesSection) {
+                notesHeader.addEventListener('click', (event) => {
+                    if (event.target !== langToggleButtonStand && !langToggleButtonStand.contains(event.target)) {
+                        notesSection.classList.toggle('notes-open');
+                    }
+                });
+            }
+
+            if (!isPausedStand) {
+                lastTimestampStand = performance.now();
+                animationFrameIdStand = requestAnimationFrame(animateStand);
+            } else {
+                drawFrameStand();
+            }
+        });
+    </script>
+</body>
+
+</html>

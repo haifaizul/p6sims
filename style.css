@@ -1,0 +1,706 @@
+/* Clean & Modern Light Design System for p6sims */
+:root {
+    /* Palette: Clean, Light, Modern SaaS */
+    --bg-color: #f8fafc;
+    --surface-color: #ffffff;
+    --border-color: #e2e8f0;
+
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+
+    /* Accents - Vibrant but restrained */
+    --primary-color: #2563eb;
+    /* Royal Blue */
+    --primary-hover: #1d4ed8;
+    --secondary-color: #10b981;
+    /* Emerald */
+    --accent-pink: #ec4899;
+    --accent-purple: #8b5cf6;
+
+    /* Shadows & Effects */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-hover: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+    --radius-md: 12px;
+    --radius-lg: 24px;
+
+    --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--text-main);
+    margin-top: 0;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s ease;
+}
+
+/* Layout */
+.container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+.site-header {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border-color);
+    padding: 16px 0;
+}
+
+.site-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo span {
+    color: var(--primary-color);
+}
+
+.nav-links a {
+    margin-left: 2rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.nav-links a:hover {
+    color: var(--primary-color);
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    padding: 120px 20px 80px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero h1 {
+    font-size: 4rem;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, var(--text-main), var(--text-muted));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 32px;
+    background-color: var(--text-main);
+    color: white;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-md);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    background-color: #000;
+}
+
+/* Grid */
+.simulations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+    padding: 40px 0;
+}
+
+/* Cards */
+.simulation-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+}
+
+.simulation-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.simulation-card:hover .card-thumbnail-area span {
+    animation: float 3s ease-in-out infinite;
+}
+
+.card-thumbnail-area {
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    background: var(--bg-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.card-thumbnail-area span {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+/* Subtle patterns for thumbnails instead of gradients */
+.wave-sim-thumbnail {
+    background: radial-gradient(circle at center, rgba(37, 99, 235, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    color: var(--primary-color);
+}
+
+.shm-sim-thumbnail {
+    background: radial-gradient(circle at center, rgba(16, 185, 129, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    color: var(--secondary-color);
+}
+
+.superposition-sim-thumbnail {
+    background: radial-gradient(circle at center, rgba(236, 72, 153, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    color: var(--accent-pink);
+}
+
+.standing-wave-thumbnail {
+    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    color: var(--accent-purple);
+}
+
+.mechanics-sim-thumbnail {
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(56, 189, 248, 0.2));
+    color: var(--secondary-color);
+}
+
+.card-content {
+    padding: 28px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.simulation-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+}
+
+.simulation-card p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 24px;
+    flex-grow: 1;
+}
+
+.simulation-card .btn {
+    width: 100%;
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    box-shadow: none;
+}
+
+.simulation-card .btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+/* About Section */
+.about-section {
+    text-align: center;
+    padding: 80px 0;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.about-section h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.about-section p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.about-link {
+    color: var(--primary-color);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.about-link:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
+.site-footer {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--text-light);
+    border-top: 1px solid var(--border-color);
+    margin-top: 60px;
+    font-size: 0.9rem;
+}
+
+/* Page Headers (Topic Pages) */
+.page-header {
+    text-align: center;
+    padding: 80px 0 40px;
+    background: linear-gradient(to bottom, #fff, var(--bg-color));
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 40px;
+}
+
+.page-header h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb a {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.breadcrumb a:hover {
+    color: var(--text-main);
+}
+
+/* Construction Area */
+.construction-area {
+    text-align: center;
+    padding: 100px 20px;
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border-color);
+    margin: 40px 0;
+}
+
+.construction-icon {
+    font-size: 4rem;
+    border: 1px solid var(--border-color);
+}
+
+.back-link {
+    margin-bottom: 20px;
+}
+
+.back-link a {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.back-link a:hover {
+    color: var(--primary-color);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.site-nav {
+    display: flex;
+    gap: 2rem;
+}
+
+.site-nav a {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.site-nav a:hover {
+    color: var(--primary-color);
+}
+
+/* Button Styles for Simulations */
+.btn-primary {
+    padding: 10px 24px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    overflow: hidden;
+}
+
+.card-thumbnail-area span {
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+/* Subtle patterns for thumbnails instead of gradients */
+.wave-sim-thumbnail {
+    background: radial-gradient(circle at center, rgba(37, 99, 235, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    color: var(--primary-color);
+}
+
+.shm-sim-thumbnail {
+    background: radial-gradient(circle at center, rgba(16, 185, 129, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    color: var(--secondary-color);
+}
+
+.superposition-sim-thumbnail {
+    background: radial-gradient(circle at center, rgba(236, 72, 153, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    color: var(--accent-pink);
+}
+
+.standing-wave-thumbnail {
+    background: radial-gradient(circle at center, rgba(139, 92, 246, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    color: var(--accent-purple);
+}
+
+.mechanics-sim-thumbnail {
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(56, 189, 248, 0.2));
+    color: var(--secondary-color);
+}
+
+.card-content {
+    padding: 28px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.simulation-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+}
+
+.simulation-card p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 24px;
+    flex-grow: 1;
+}
+
+.simulation-card .btn {
+    width: 100%;
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+    box-shadow: none;
+}
+
+.simulation-card .btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+/* About Section */
+.about-section {
+    text-align: center;
+    padding: 80px 0;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.about-section h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.about-section p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.about-link {
+    color: var(--primary-color);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.about-link:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
+.site-footer {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--text-light);
+    border-top: 1px solid var(--border-color);
+    margin-top: 60px;
+    font-size: 0.9rem;
+}
+
+/* Page Headers (Topic Pages) */
+.page-header {
+    text-align: center;
+    padding: 80px 0 40px;
+    background: linear-gradient(to bottom, #fff, var(--bg-color));
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 40px;
+}
+
+.page-header h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb a {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.breadcrumb a:hover {
+    color: var(--text-main);
+}
+
+/* Construction Area */
+.construction-area {
+    text-align: center;
+    padding: 100px 20px;
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border-color);
+    margin: 40px 0;
+}
+
+.construction-icon {
+    font-size: 4rem;
+    border: 1px solid var(--border-color);
+}
+
+.back-link {
+    margin-bottom: 20px;
+}
+
+.back-link a {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.back-link a:hover {
+    color: var(--primary-color);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.site-nav {
+    display: flex;
+    gap: 2rem;
+}
+
+.site-nav a {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.site-nav a:hover {
+    color: var(--primary-color);
+}
+
+/* Button Styles for Simulations */
+.btn-primary {
+    padding: 10px 24px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    padding: 10px 24px;
+    background-color: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-color);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* Simulation Page Styles */
+.simulation-wrapper {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.simulation-canvas {
+    width: 100%;
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    display: block;
+}
+
+.canvas-container {
+    background-color: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+/* Shared Variables for Simulations */
+:root {
+    --card-bg: #ffffff;
+    --bg-secondary: #f8fafc;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --accent-color: #ec4899;
+    --highlight-color: #f59e0b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2.8rem;
+    }
+
+    .site-header .container {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .nav-links a {
+        margin: 0 12px;
+    }
+
+    .simulations-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .simulation-wrapper {
+        padding: 20px;
+        margin: 20px auto;
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .site-nav {
+        gap: 1rem;
+    }
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p6sims - Interactive Physics Visualizations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <a href="#" class="logo">p6sims</a>
+            <nav class="nav-links">
+                <a href="#simulations">Simulations</a>
+                <a href="#about">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Physics, Reimagined.</h1>
+            <p>Dive into the invisible world of waves, forces, and motion with interactive, real-time simulations
+                designed to spark curiosity.</p>
+            <a href="#simulations" class="btn">Explore Simulations</a>
+        </div>
+    </section>
+
+    <main class="container">
+        <section id="simulations">
+            <div class="simulations-grid">
+
+                <!-- Waves & Vibration -->
+                <div class="simulation-card">
+                    <div class="card-thumbnail-area wave-sim-thumbnail">
+                        <span>〰️</span>
+                    </div>
+                    <div class="card-content">
+                        <h3>Waves & Vibration</h3>
+                        <p>Master the mechanics of sound and light. Explore superposition, interference, and standing
+                            waves.</p>
+                        <a href="waves-vibration.html" class="btn">Start Experimenting</a>
+                    </div>
+                </div>
+
+                <!-- Mechanics (Placeholder) -->
+                <div class="simulation-card">
+                    <div class="card-thumbnail-area mechanics-sim-thumbnail">
+                        <span>⚙️</span>
+                    </div>
+                    <div class="card-content">
+                        <h3>Mechanics</h3>
+                        <p>Coming Soon. Unravel the laws of motion, energy, and momentum with our upcoming suite of
+                            tools.</p>
+                        <a href="mechanics.html" class="btn">View Topic</a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="about" class="about-section">
+            <h2>About the Project</h2>
+            <p>
+                p6sims is a passion project by <strong>Hai</strong>, dedicated to making complex physics concepts
+                intuitive through code and visualization.
+            </p>
+            <a href="https://www.instagram.com/hai_faizul/" target="_blank" class="about-link">Follow on Instagram
+                &rarr;</a>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; <span id="currentYear"></span> p6sims. Built by Hai.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+
+</body>
+
+</html>
