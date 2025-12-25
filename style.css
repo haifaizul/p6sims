@@ -795,3 +795,8 @@ a {
     background: radial-gradient(circle at center, rgba(168, 85, 247, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
     color: #a855f7;
 }
+
+.collisions-thumbnail {
+    background: radial-gradient(circle at center, rgba(239, 68, 68, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    color: #ef4444;
+}

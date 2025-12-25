@@ -406,8 +406,25 @@
             massValueSpan.textContent = mass.toFixed(0) + ' kg';
             frictionValueSpan.textContent = frictionCoeff.toFixed(2);
 
-            const frictionForce = frictionCoeff * mass * g * (velocity !== 0 ? -Math.sign(velocity) : -Math.sign(appliedForce));
-            const netForce = appliedForce + (appliedForce !== 0 || velocity !== 0 ? frictionForce : 0);
+            const maxFriction = frictionCoeff * mass * g;
+            let frictionForce = 0;
+            let netForce = 0;
+
+            if (Math.abs(velocity) > 0.01) {
+                // Moving - Kinetic Friction
+                frictionForce = -Math.sign(velocity) * maxFriction;
+                netForce = appliedForce + frictionForce;
+            } else {
+                // At rest - Static Friction
+                if (Math.abs(appliedForce) > maxFriction) {
+                    frictionForce = -Math.sign(appliedForce) * maxFriction;
+                    netForce = appliedForce + frictionForce;
+                } else {
+                    frictionForce = -appliedForce;
+                    netForce = 0;
+                }
+            }
+
             const acceleration = netForce / mass;
 
             netForceSpan.textContent = netForce.toFixed(1) + ' N';
@@ -495,8 +512,15 @@
                 }
 
                 // Friction Force (red)
-                const frictionForce = frictionCoeff * mass * g * (velocity !== 0 ? -Math.sign(velocity) : -Math.sign(appliedForce));
-                if (Math.abs(frictionForce) > 0.1 && (appliedForce !== 0 || velocity !== 0)) {
+                const maxFriction = frictionCoeff * mass * g;
+                let frictionForce = 0;
+                if (Math.abs(velocity) > 0.01) {
+                    frictionForce = -Math.sign(velocity) * maxFriction;
+                } else {
+                    frictionForce = Math.abs(appliedForce) > maxFriction ? -Math.sign(appliedForce) * maxFriction : -appliedForce;
+                }
+
+                if (Math.abs(frictionForce) > 0.1) {
                     drawArrow(ctx, blockX, fbdY, blockX + frictionForce * vectorScale, fbdY, '#ef4444', 'F_fric');
                 }
 
@@ -562,15 +586,30 @@
 
             if (deltaTime > 0 && deltaTime < 0.1) {
                 // Calculate forces
-                const frictionForce = frictionCoeff * mass * g * (velocity !== 0 ? -Math.sign(velocity) : -Math.sign(appliedForce));
-                const netForce = appliedForce + (appliedForce !== 0 || velocity !== 0 ? frictionForce : 0);
+                const maxFriction = frictionCoeff * mass * g;
+                let frictionForce = 0;
+                let netForce = 0;
+
+                if (Math.abs(velocity) > 0.01) {
+                    frictionForce = -Math.sign(velocity) * maxFriction;
+                    netForce = appliedForce + frictionForce;
+                } else {
+                    if (Math.abs(appliedForce) > maxFriction) {
+                        frictionForce = -Math.sign(appliedForce) * maxFriction;
+                        netForce = appliedForce + frictionForce;
+                    } else {
+                        frictionForce = -appliedForce;
+                        netForce = 0;
+                    }
+                }
+
                 const acceleration = netForce / mass;
 
                 // Update velocity and position
                 velocity += acceleration * deltaTime;
 
-                // Stop if velocity is very small and no applied force
-                if (Math.abs(velocity) < 0.01 && Math.abs(appliedForce) < Math.abs(frictionForce)) {
+                // Stop if velocity changes sign due to friction (kinetic friction shouldn't reverse motion)
+                if (Math.abs(velocity) < 0.01 || (Math.sign(velocity) !== Math.sign(velocity - acceleration * deltaTime) && Math.abs(appliedForce) <= maxFriction)) {
                     velocity = 0;
                 }
 
